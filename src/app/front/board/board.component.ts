@@ -12,4 +12,10 @@ export class BoardComponent extends BoardBase {
   constructor(@Inject(OBSERVABLE_BOARD_CONFIG) boardConfig$: Observable<BoardConfig>) {
     super(boardConfig$);
   }
+
+  onClick(id: number) {
+    if (this.isActive && this.G.cells[id] === null) {
+      this.moves.clickCell(id);
+    }
+  }
 }
