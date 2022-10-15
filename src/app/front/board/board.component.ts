@@ -75,12 +75,26 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
 
   colorAt(i: number, j: number) {
     const player = this.board[i][j]?.player;
-    if (player) {
-      return getPlayerColor(player);
-    }
 
-    if (this.ctx.phase === 'place' && this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
-      return getPlayerColorLight(this.player);
+    switch (this.ctx.phase) {
+      case 'place':
+        if (player) {
+          return getPlayerColor(player);
+        }
+
+        if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
+          return getPlayerColorLight(this.player);
+        }
+        break;
+      case 'play':
+        if (player) {
+          if (player === this.player) {
+            return getPlayerColor(player);
+          } else {
+            return getPlayerColorLight(player);
+          }
+        }
+        break;
     }
 
     return null;
