@@ -25,6 +25,8 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
   public pawnToPlace: Pawn[];
   public selectedPawn: Pawn;
 
+  public instruction: string;
+
   private knownPositions: Map<Player, Map<Pawn, number>> = new Map<Player, Map<Pawn, number>>();
 
   constructor(@Inject(OBSERVABLE_BOARD_CONFIG) boardConfig$: Observable<BoardConfig>) {
@@ -43,6 +45,8 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
 
   select(pawn: Pawn) {
     this.selectedPawn = pawn;
+
+    this.instruction = 'Select cell in which to place ' + pawn;
   }
 
   onClick(position: number) {
@@ -66,8 +70,15 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
   private update() {
     this.updateBoard();
 
-    if (this.ctx.phase === 'place') {
-      this.updateInPlacePhase();
+    switch (this.ctx.phase) {
+      case 'place':
+        this.updateInPlacePhase();
+        break;
+      case 'play':
+        this.updateInPlayPhase();
+        break;
+      default:
+        this.instruction = null;
     }
   }
 
@@ -126,7 +137,11 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
   private updateInPlacePhase() {
     this.pawnToPlace = PAWNS.filter(p => !hasPawn(this.state, this.player, p));
     this.selectedPawn = null;
+
+    this.instruction = 'Select pawn below';
   }
+
+  private updateInPlayPhase() {}
 
   private placeSelectedPawnAt(position: number) {
     if (!this.selectedPawn) {

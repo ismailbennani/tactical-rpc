@@ -1,7 +1,8 @@
 <div *ngIf="state" class="text-center">
   <div [ngStyle]="{ color: color() }">PLAYER {{ player }}</div>
+  <div *ngIf="instruction">{{ instruction }}</div>
 
-  <table>
+  <table class="m-2">
     <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
       <td *ngFor="let _ of [].constructor(state.board.size); let j = index">
         <button class="w-full h-full" (click)="onClick(index(i, j))">
@@ -11,8 +12,9 @@
     </tr>
   </table>
 
-  <div *ngIf="ctx.phase === 'place'" class="w-full flex justify-evenly">
-    <button *ngFor="let pawn of pawnToPlace"
+  <div *ngIf="ctx.phase === 'place'" class="w-full flex items-center justify-evenly">
+    SELECT
+    <button mat-stroked-button *ngFor="let pawn of pawnToPlace"
             [class.bg-gray-300]="pawn === selectedPawn"
             (click)="select(pawn)">
       <app-pawn [pawn]="pawn"></app-pawn>

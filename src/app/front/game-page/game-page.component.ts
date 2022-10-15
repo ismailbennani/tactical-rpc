@@ -17,7 +17,7 @@ export class GamePageComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    const game = new GameBuilder(5).build();
+    const game = new GameBuilder(10).build();
 
     this.config = { game, board: BoardComponent };
   }
