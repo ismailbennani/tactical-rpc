@@ -6,6 +6,7 @@ import { RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'home' },
   { path: 'home', component: AppComponent },
+  { path: 'game', loadChildren: () => import('./front/front.module').then(m => m.FrontModule) },
 ];
 
 @NgModule({
