@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { GameService } from '../../game/game.service';
+import { Component, isDevMode, OnInit } from '@angular/core';
 import { BoardComponent } from '../board/board.component';
+import { GameBuilder } from '../../game/game-builder';
 
 @Component({
   selector: 'app-game-page',
@@ -10,9 +10,15 @@ import { BoardComponent } from '../board/board.component';
 export class GamePageComponent implements OnInit {
   public config;
 
-  constructor(private gameService: GameService) {}
+  public get debug() {
+    return isDevMode();
+  }
+
+  constructor() {}
 
   ngOnInit(): void {
-    this.config = { game: this.gameService.game, board: BoardComponent };
+    const game = new GameBuilder(5).build();
+
+    this.config = { game, board: BoardComponent };
   }
 }

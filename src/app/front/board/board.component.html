@@ -1,24 +1,21 @@
-<div>
-  <table id="board" *ngIf="G">
-    <tbody>
-    <tr *ngFor="let i of [0, 1, 2]">
-      <ng-container *ngFor="let j of [0, 1, 2]">
-        <ng-container *ngIf="{id: 3 * i + j}; let stupidAngular">
-          <td [class.active]="isActive && G.cells[stupidAngular.id] === null"
-              (click)="onClick(stupidAngular.id)">
-            {{G.cells[stupidAngular.id]}}
-          </td>
-        </ng-container>
-      </ng-container>
+<div *ngIf="state" class="text-center">
+  <div [ngStyle]="{ color: color() }">PLAYER {{ player }}</div>
+
+  <table>
+    <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
+      <td *ngFor="let _ of [].constructor(state.board.size); let j = index">
+        <button class="w-full h-full" (click)="onClick(index(i, j))">
+          <app-cell [cell]="board[i][j]"></app-cell>
+        </button>
+      </td>
     </tr>
-    </tbody>
   </table>
-  <div *ngIf="!isPreview && playerID" id="player">Player: {{playerID}}</div>
-  <ng-container *ngIf="ctx && ctx.gameover">
-    <div *ngIf="ctx.gameover.winner !== undefined; else draw" id="winner">Winner: {{ctx.gameover.winner}}</div>
-    <ng-template #draw>
-      <div id="winner">Draw!</div>
-    </ng-template>
-  </ng-container>
-  <div *ngIf="!isPreview && isMultiplayer && !isConnected">Disconnected!</div>
+
+  <div *ngIf="ctx.phase === 'place'" class="w-full flex justify-evenly">
+    <button *ngFor="let pawn of pawnToPlace"
+            [class.bg-gray-300]="pawn === selectedPawn"
+            (click)="select(pawn)">
+      <app-pawn [pawn]="pawn"></app-pawn>
+    </button>
+  </div>
 </div>
