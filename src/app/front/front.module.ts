@@ -5,11 +5,11 @@ import { GamePageComponent } from './game-page/game-page.component';
 import { BoardComponent } from './board/board.component';
 import { BoardgameIoModule } from '../boardgame-io-angular/boardgame-io.module';
 import { PawnComponent } from './pawn/pawn.component';
-import { CellComponent } from './cell/cell.component';
 import { MatButtonModule } from '@angular/material/button';
+import { SvgIconsModule } from '@ngneat/svg-icon';
 
 @NgModule({
-  declarations: [GamePageComponent, BoardComponent, PawnComponent, CellComponent],
-  imports: [CommonModule, FrontRoutingModule, BoardgameIoModule, MatButtonModule],
+  declarations: [GamePageComponent, BoardComponent, PawnComponent],
+  imports: [CommonModule, FrontRoutingModule, BoardgameIoModule, MatButtonModule, SvgIconsModule],
 })
 export class FrontModule {}

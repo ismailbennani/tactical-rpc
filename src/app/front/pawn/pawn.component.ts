@@ -1,5 +1,9 @@
 import { Component, Input } from '@angular/core';
 import { Pawn } from '../../game/game-types';
+import { SvgIconType } from '@ngneat/svg-icon/lib/types';
+import { rockIcon } from '@app/svg/rock';
+import { scissorsIcon } from '@app/svg/scissors';
+import { paperIcon } from '@app/svg/paper';
 
 @Component({
   selector: 'app-pawn',
@@ -8,7 +12,24 @@ import { Pawn } from '../../game/game-types';
 })
 export class PawnComponent {
   @Input()
-  public pawn: Pawn;
+  set pawn(pawn: Pawn) {
+    switch (pawn) {
+      case Pawn.Rock:
+        this.icon = rockIcon;
+        break;
+      case Pawn.Paper:
+        this.icon = paperIcon;
+        break;
+      case Pawn.Scissor:
+        this.icon = scissorsIcon;
+        break;
+    }
+  }
+
+  @Input()
+  public size: string;
+
+  public icon: SvgIconType;
 
   constructor() {}
 }

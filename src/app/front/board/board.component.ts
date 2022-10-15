@@ -67,6 +67,15 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
     return getPlayerColor(this.player);
   }
 
+  colorAt(i: number, j: number) {
+    const player = this.board[i][j]?.player;
+    if (!player) {
+      return null;
+    }
+
+    return getPlayerColor(player);
+  }
+
   private update() {
     this.updateBoard();
 

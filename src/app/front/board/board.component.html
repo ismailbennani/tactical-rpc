@@ -4,9 +4,12 @@
 
   <table class="m-2">
     <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
-      <td *ngFor="let _ of [].constructor(state.board.size); let j = index">
+      <td *ngFor="let _ of [].constructor(state.board.size); let j = index"
+          [ngStyle]="{ backgroundColor: colorAt(i, j) }" class="w-12 h-12 border-2">
         <button class="w-full h-full" (click)="onClick(index(i, j))">
-          <app-cell [cell]="board[i][j]"></app-cell>
+          <div class="flex items-center justify-center" *ngIf="board[i][j]">
+            <app-pawn [pawn]="board[i][j].pawn" size="xl"></app-pawn>
+          </div>
         </button>
       </td>
     </tr>
@@ -17,7 +20,9 @@
     <button mat-stroked-button *ngFor="let pawn of pawnToPlace"
             [class.bg-gray-300]="pawn === selectedPawn"
             (click)="select(pawn)">
-      <app-pawn [pawn]="pawn"></app-pawn>
+      <div class="py-2">
+        <app-pawn [pawn]="pawn" size="xxl"></app-pawn>
+      </div>
     </button>
   </div>
 </div>
