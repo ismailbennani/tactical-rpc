@@ -22,7 +22,13 @@
       "es2020",
       "dom"
     ],
-    "allowSyntheticDefaultImports": true
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "paths": {
+      "@app/svg/*": [
+        "src/app/svg/*"
+      ]
+    }
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
