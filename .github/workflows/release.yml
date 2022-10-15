@@ -30,12 +30,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build
-          path: dist/micro-clicker
+          path: build
 
       - name: Upload github-pages artifact
         uses: actions/upload-pages-artifact@v0
         with:
-          path: dist/tactical-rpc
+          path: build
 
       - name: Deploy to github pages
         id: deployment
