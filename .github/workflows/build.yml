@@ -72,5 +72,5 @@ jobs:
         uses: actions/upload-artifact@v3.1.0
         with:
           name: build
-          path: dist/app
+          path: dist/tactical-rpc
           if-no-files-found: error
