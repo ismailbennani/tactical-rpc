@@ -5,11 +5,12 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { HomeComponent } from './common/home/home.component';
 import { PageNotFoundComponent } from './common/page-not-found/page-not-found.component';
-import { RouterOutlet } from '@angular/router';
+import { RouterLink, RouterOutlet } from '@angular/router';
 import { SvgIconsModule } from '@ngneat/svg-icon';
 import { paperIcon } from '@app/svg/paper';
 import { rockIcon } from '@app/svg/rock';
 import { scissorsIcon } from '@app/svg/scissors';
+import { MatButtonModule } from '@angular/material/button';
 
 @NgModule({
   declarations: [AppComponent, HomeComponent, PageNotFoundComponent],
@@ -29,6 +30,8 @@ import { scissorsIcon } from '@app/svg/scissors';
       },
       defaultSize: 'md',
     }),
+    MatButtonModule,
+    RouterLink,
   ],
   providers: [],
   bootstrap: [AppComponent],
