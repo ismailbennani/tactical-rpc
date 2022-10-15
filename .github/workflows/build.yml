@@ -1,0 +1,75 @@
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: "[CI] Build and test"
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [ 16.10.x ]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v3
+
+      - name: Setup python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Set env version
+        id: version
+        run: python .github/workflows/version.py
+
+      - name: Use Node.js (version ${{ matrix.node-version }})
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Setup environment
+        run: npm ci
+
+      - name: Build v${{ steps.version.outputs.version || '?' }}
+        run: npm run build
+
+      - name: Test
+        run: npm run test-ci
+
+      - name: Set failure
+        if: ${{ failure() }}
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: "[CI] Tests"
+          description: "Did tests pass"
+          state: "failure"
+          sha: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Set success
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: Sibz/github-status-action@v1
+        with:
+          authToken: ${{secrets.GITHUB_TOKEN}}
+          context: "[CI] Tests"
+          description: "Test passed"
+          state: "success"
+          sha: ${{github.event.pull_request.head.sha || github.sha}}
+
+      - name: Upload
+        uses: actions/upload-artifact@v3.1.0
+        with:
+          name: build
+          path: dist/app
+          if-no-files-found: error

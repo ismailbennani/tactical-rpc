@@ -1,0 +1,42 @@
+name: "Release"
+
+on:
+  # Runs on pushes targeting the default branch
+  push:
+    branches: [ "master" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build.yml
+
+  release:
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download
+        uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: dist/micro-clicker
+
+      - name: Upload github-pages artifact
+        uses: actions/upload-pages-artifact@v0
+        with:
+          path: dist/app
+
+      - name: Deploy to github pages
+        id: deployment
+        uses: actions/deploy-pages@v1.0.10
