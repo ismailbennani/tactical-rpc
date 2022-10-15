@@ -32,6 +32,12 @@ jobs:
           name: build
           path: build
 
+      - name: Set correct base
+        run: sed -i 's/<base href="\/">/<base href="\/FullStackTycoon\/">/g' build/index.html
+
+      - name: Use index.html as 404 page
+        run: cp build/index.html build/404.html
+
       - name: Upload github-pages artifact
         uses: actions/upload-pages-artifact@v0
         with:
