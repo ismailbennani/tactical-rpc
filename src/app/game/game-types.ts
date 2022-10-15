@@ -12,6 +12,8 @@ export type Board = {
 export interface GameState {
   board: Board;
   playersPawns: [Player, PositionedPawn[]][];
+
+  startingAreas: [Player, number[]][];
 }
 
 export enum Pawn {

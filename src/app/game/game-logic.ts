@@ -1,19 +1,71 @@
-import { GameState, Pawn, PAWNS, Player } from './game-types';
+import { Board, GameState, Pawn, PAWNS, Player } from './game-types';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { at } from './game-utils';
 
+function index(board: Board, i: number, j: number): number {
+  return i * board.size + j;
+}
+
+function position(index: number): [number, number] {
+  return [Math.floor(index / this.state.board.size), index % this.state.board.size];
+}
+
+function getStartingArea(G: GameState, player: Player): number[] {
+  const entry = G.startingAreas.find(([p, _]) => p === player);
+  if (!entry) {
+    return [];
+  }
+  const [_, area] = entry;
+
+  return area;
+}
+
+export const startingArea = (board: Board, player: Player): number[] => {
+  const noMansLandSize = Math.max(1, Math.floor(board.size / 4));
+  const startingAreaSize = Math.floor((board.size - noMansLandSize) / 2);
+
+  const result = [];
+
+  switch (player) {
+    case '0':
+      for (let i = 0; i < startingAreaSize; i++) {
+        for (let j = 0; j < board.size; j++) {
+          result.push(index(board, i, j));
+        }
+      }
+      break;
+    case '1':
+      for (let i = board.size - startingAreaSize; i < board.size; i++) {
+        for (let j = 0; j < board.size; j++) {
+          result.push(index(board, i, j));
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
+  return result;
+};
+
 export const placePawn = (
-  { G, playerID }: { G: GameState; playerID: Player },
+  { G, playerID: player }: { G: GameState; playerID: Player },
   position: number,
   pawn: Pawn
 ): typeof INVALID_MOVE | GameState => {
-  if (isNaN(position) || position < 0 || position >= G.board.size * G.board.size || !!at(G, position)) {
+  if (
+    isNaN(position) ||
+    position < 0 ||
+    position >= G.board.size * G.board.size ||
+    !getStartingArea(G, player).includes(position) ||
+    !!at(G, position)
+  ) {
     return INVALID_MOVE;
   }
 
-  let playerEntry = G.playersPawns.find(([p, _]) => p === playerID);
+  let playerEntry = G.playersPawns.find(([p, _]) => p === player);
   if (!playerEntry) {
-    playerEntry = [playerID, []];
+    playerEntry = [player, []];
     G.playersPawns.push(playerEntry);
   }
 

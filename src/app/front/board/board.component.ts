@@ -4,7 +4,7 @@ import { BoardBase } from '../../boardgame-io-angular/board-base';
 import { BoardConfig, OBSERVABLE_BOARD_CONFIG } from '../../boardgame-io-angular/config';
 import { Cell, GameState, Pawn, PAWNS, Player } from '../../game/game-types';
 import { hasPawn } from '../../game/game-utils';
-import { getPlayerColor } from '../common/utils';
+import { getPlayerColor, getPlayerColorLight } from '../common/utils';
 
 @Component({
   selector: 'app-board',
@@ -21,6 +21,7 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
   }
 
   public board: Cell[][];
+  public targetable: boolean[][];
 
   public pawnToPlace: Pawn[];
   public selectedPawn: Pawn;
@@ -47,6 +48,11 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
     this.selectedPawn = pawn;
 
     this.instruction = 'Select cell in which to place ' + pawn;
+
+    for (const position of this.getStartingArea(this.player)) {
+      const [x, y] = this.position(position);
+      this.targetable[x][y] = true;
+    }
   }
 
   onClick(position: number) {
@@ -69,11 +75,15 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
 
   colorAt(i: number, j: number) {
     const player = this.board[i][j]?.player;
-    if (!player) {
-      return null;
+    if (player) {
+      return getPlayerColor(player);
     }
 
-    return getPlayerColor(player);
+    if (this.ctx.phase === 'place' && this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
+      return getPlayerColorLight(this.player);
+    }
+
+    return null;
   }
 
   private update() {
@@ -96,6 +106,13 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
       this.board = Array(this.state.board.size).fill(null);
       for (let i = 0; i < this.state.board.size; i++) {
         this.board[i] = Array(this.state.board.size).fill(null);
+      }
+    }
+
+    if (!this.targetable) {
+      this.targetable = Array(this.state.board.size).fill(null);
+      for (let i = 0; i < this.state.board.size; i++) {
+        this.targetable[i] = Array(this.state.board.size).fill(false);
       }
     }
 
@@ -148,9 +165,17 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
     this.selectedPawn = null;
 
     this.instruction = 'Select pawn below';
+
+    for (let i = 0; i < this.state.board.size; i++) {
+      for (let j = 0; j < this.state.board.size; j++) {
+        this.targetable[i][j] = false;
+      }
+    }
   }
 
-  private updateInPlayPhase() {}
+  private updateInPlayPhase() {
+    this.instruction = null;
+  }
 
   private placeSelectedPawnAt(position: number) {
     if (!this.selectedPawn) {
@@ -159,5 +184,15 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
 
     this.moves.placePawn(position, this.selectedPawn);
     this.update();
+  }
+
+  private getStartingArea(player: Player): number[] {
+    const entry = this.state.startingAreas.find(([p, _]) => p === player);
+    if (!entry) {
+      return [];
+    }
+    const [_, area] = entry;
+
+    return area;
   }
 }
