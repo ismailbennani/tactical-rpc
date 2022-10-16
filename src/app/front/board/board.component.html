@@ -1,8 +1,16 @@
 <div *ngIf="state" class="text-center">
 
   <div class="w-full h-full flex flex-col">
-    <div class="w-full p-2">
-      <div [ngStyle]="{ color: color() }" class="font-bold">PLAYER {{ playerID }}</div>
+    <div class="w-full p-2 font-bold">
+      <div *ngIf="!ctx.gameover" [ngStyle]="{ color: color() }">
+        PLAYER {{ playerID }}
+      </div>
+      <ng-container *ngIf="ctx.gameover?.draw">
+        DRAW
+      </ng-container>
+      <div *ngIf="ctx.gameover?.winner" [ngStyle]="{ color: colorOf(ctx.gameover.winner) }" class="font-bold">
+        Player {{ ctx.gameover.winner }} WINS!
+      </div>
     </div>
 
     <mat-divider></mat-divider>

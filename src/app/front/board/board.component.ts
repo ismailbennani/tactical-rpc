@@ -146,8 +146,12 @@ export class BoardComponent extends BoardBase implements OnInit {
     return [Math.floor(index / this.state.board.size), index % this.state.board.size];
   }
 
+  colorOf(player: Player) {
+    return this.playerCustomizationService.getScheme(player).bgSelected;
+  }
+
   color(): string {
-    return this.playerCustomizationService.getScheme(this.playerID).bgSelected;
+    return this.colorOf(this.playerID);
   }
 
   borderColorAt(i: number, j: number) {
@@ -255,6 +259,7 @@ export class BoardComponent extends BoardBase implements OnInit {
       this.select(this.pawnToPlace[0]);
     }
   }
+
   private updateInPlayPhase() {
     this.instruction = 'Select a pawn to move';
     this.selectedPawn = null;

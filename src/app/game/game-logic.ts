@@ -1,4 +1,4 @@
-import { Board, GameState, Pawn, PAWNS, Player } from './game-types';
+import { Board, GameState, Pawn, PAWNS, Player, PositionedPawn } from './game-types';
 import { INVALID_MOVE } from 'boardgame.io/core';
 import { accessibleCells, at, getStartingArea, index, removePawn, resolveFight } from './game-utils';
 
@@ -128,7 +128,7 @@ export const endGame = ({ G, ctx }) => {
     return false;
   }
 
-  const alive = G.playersPawns.filter(([_, pawns]) => pawns.length > 0);
+  const alive: [Player, PositionedPawn[]][] = G.playersPawns.filter(([_, pawns]) => pawns.length > 0);
 
   if (alive.length === 1) {
     return { winner: alive[0][0] };
@@ -136,16 +136,43 @@ export const endGame = ({ G, ctx }) => {
     return { draw: true };
   }
 
-  const hasUnkillablePawn = alive.filter(
-    (playerPawns, i) =>
-      playerPawns.filter(pawn =>
-        alive
-          .filter((_, j) => i !== j)
-          .filter(otherPlayerPawns => otherPlayerPawns.every(otherPawn => resolveFight(pawn, otherPawn) === 'tie'))
-      ).length > 0
-  );
+  const hasUnbeatablePawns = [];
+  for (let i = 0; i < alive.length; i++) {
+    const [player, playerPawns] = alive[i];
 
-  if (hasUnkillablePawn.length == G.playersPawns.length) {
+    for (const playerPawn of playerPawns) {
+      let anyOtherPlayerHasPawnThatCanBeatPlayerPawn = false;
+
+      for (let j = 0; j < alive.length; j++) {
+        if (i === j) {
+          continue;
+        }
+
+        const [_, otherPlayerPawns] = alive[j];
+
+        for (const otherPlayerPawn of otherPlayerPawns) {
+          anyOtherPlayerHasPawnThatCanBeatPlayerPawn =
+            anyOtherPlayerHasPawnThatCanBeatPlayerPawn ||
+            resolveFight(otherPlayerPawn.pawn, playerPawn.pawn) === 'victory';
+
+          if (anyOtherPlayerHasPawnThatCanBeatPlayerPawn) {
+            break;
+          }
+        }
+
+        if (anyOtherPlayerHasPawnThatCanBeatPlayerPawn) {
+          break;
+        }
+      }
+
+      if (!anyOtherPlayerHasPawnThatCanBeatPlayerPawn) {
+        hasUnbeatablePawns.push(player);
+        break;
+      }
+    }
+  }
+
+  if (hasUnbeatablePawns.length == G.playersPawns.length) {
     return { draw: true };
   }
 
