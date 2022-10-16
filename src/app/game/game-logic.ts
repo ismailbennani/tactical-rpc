@@ -136,5 +136,18 @@ export const endGame = ({ G, ctx }) => {
     return { draw: true };
   }
 
+  const hasUnkillablePawn = alive.filter(
+    (playerPawns, i) =>
+      playerPawns.filter(pawn =>
+        alive
+          .filter((_, j) => i !== j)
+          .filter(otherPlayerPawns => otherPlayerPawns.every(otherPawn => resolveFight(pawn, otherPawn) === 'tie'))
+      ).length > 0
+  );
+
+  if (hasUnkillablePawn.length == G.playersPawns.length) {
+    return { draw: true };
+  }
+
   return false;
 };
