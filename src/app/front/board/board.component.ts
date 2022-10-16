@@ -5,6 +5,7 @@ import { BoardConfig, OBSERVABLE_BOARD_CONFIG } from '../../boardgame-io-angular
 import { Cell, GameState, Pawn, PAWNS, Player } from '../../game/game-types';
 import { hasPawn } from '../../game/game-utils';
 import { PlayerCustomizationService } from '../common/player-customization/player-customization.service';
+import { Ctx } from 'boardgame.io';
 
 @Component({
   selector: 'app-board',
@@ -16,8 +17,12 @@ export class BoardComponent extends BoardBase {
     return this.G;
   }
 
-  public get player(): any {
-    return this.ctx.currentPlayer;
+  public get context(): Ctx {
+    return this.ctx;
+  }
+
+  public get isPlayerTurn(): boolean {
+    return this.playerID === this.context.currentPlayer;
   }
 
   public board: Cell[][];
@@ -28,7 +33,7 @@ export class BoardComponent extends BoardBase {
 
   public instruction: string;
 
-  private knownPositions: Map<Player, Map<Pawn, number>> = new Map<Player, Map<Pawn, number>>();
+  private config: BoardConfig;
 
   constructor(
     @Inject(OBSERVABLE_BOARD_CONFIG) boardConfig$: Observable<BoardConfig>,
@@ -36,7 +41,10 @@ export class BoardComponent extends BoardBase {
   ) {
     super(boardConfig$);
 
-    boardConfig$.subscribe(_ => this.update());
+    boardConfig$.subscribe(c => {
+      this.config = c;
+      this.update();
+    });
   }
 
   select(pawn: Pawn) {
@@ -44,7 +52,7 @@ export class BoardComponent extends BoardBase {
 
     this.instruction = 'Select cell in which to place ' + pawn;
 
-    for (const position of this.getStartingArea(this.player)) {
+    for (const position of this.getStartingArea(this.playerID)) {
       const [x, y] = this.position(position);
       this.targetable[x][y] = true;
     }
@@ -65,7 +73,7 @@ export class BoardComponent extends BoardBase {
   }
 
   color(): string {
-    return this.playerCustomization.getScheme(this.player).bgSelected;
+    return this.playerCustomization.getScheme(this.playerID).bgSelected;
   }
 
   colorAt(i: number, j: number) {
@@ -78,12 +86,12 @@ export class BoardComponent extends BoardBase {
         }
 
         if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
-          return this.playerCustomization.getScheme(this.player).bgLight;
+          return this.playerCustomization.getScheme(this.playerID).bgLight;
         }
         break;
       case 'play':
         if (player) {
-          if (player === this.player) {
+          if (player === this.playerID) {
             return this.playerCustomization.getScheme(player).bgSelected;
           } else {
             return this.playerCustomization.getScheme(player).bgLight;
@@ -116,6 +124,12 @@ export class BoardComponent extends BoardBase {
       for (let i = 0; i < this.state.board.size; i++) {
         this.board[i] = Array(this.state.board.size).fill(null);
       }
+    } else {
+      for (let i = 0; i < this.state.board.size; i++) {
+        for (let j = 0; j < this.state.board.size; j++) {
+          this.board[i][j] = null;
+        }
+      }
     }
 
     if (!this.targetable) {
@@ -123,54 +137,24 @@ export class BoardComponent extends BoardBase {
       for (let i = 0; i < this.state.board.size; i++) {
         this.targetable[i] = Array(this.state.board.size).fill(false);
       }
+    } else {
+      for (let i = 0; i < this.state.board.size; i++) {
+        for (let j = 0; j < this.state.board.size; j++) {
+          this.targetable[i][j] = false;
+        }
+      }
     }
 
     for (const [player, pawns] of this.state.playersPawns) {
-      const seen = [];
-      let knownPositions = this.knownPositions.get(player);
-      if (!knownPositions) {
-        knownPositions = new Map<Pawn, number>();
-        this.knownPositions.set(player, knownPositions);
-      }
-
       for (const pawn of pawns) {
-        const [newX, newY] = this.position(pawn.position);
-
-        const knownPosition = knownPositions.get(pawn.pawn);
-        if (knownPosition === 0 || !!knownPosition) {
-          const [oldX, oldY] = this.position(knownPosition);
-          this.board[oldX][oldY] = null;
-
-          console.log(
-            `moved pawn ${pawn.pawn} of player ${player} from position ${oldX}, ${oldY} to position ${newX}, ${newY}`
-          );
-        } else {
-          console.log(`created pawn ${pawn.pawn} of player ${player} at position ${newX}, ${newY}`);
-        }
-
-        this.board[newX][newY] = { player, pawn: pawn.pawn };
-
-        seen.push(pawn.pawn);
-      }
-
-      if (seen.length < knownPositions.size) {
-        for (const [pawn, position] of knownPositions.entries()) {
-          if (seen.includes(pawn)) {
-            continue;
-          }
-
-          const [x, y] = this.position(position);
-
-          this.board[x][y] = null;
-
-          console.log(`removed pawn ${pawn} of player ${player} at position ${x}, ${y}`);
-        }
+        const [x, y] = this.position(pawn.position);
+        this.board[x][y] = { player, pawn: pawn.pawn };
       }
     }
   }
 
   private updateInPlacePhase() {
-    this.pawnToPlace = PAWNS.filter(p => !hasPawn(this.state, this.player, p));
+    this.pawnToPlace = PAWNS.filter(p => !hasPawn(this.state, this.playerID, p));
     this.selectedPawn = null;
 
     this.instruction = 'Select pawn below';
@@ -192,7 +176,6 @@ export class BoardComponent extends BoardBase {
     }
 
     this.moves.placePawn(position, this.selectedPawn);
-    this.update();
   }
 
   private getStartingArea(player: Player): number[] {
