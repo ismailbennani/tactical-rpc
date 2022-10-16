@@ -88,17 +88,17 @@ export const accessibleCells = (G: GameState, player: Player, pawn: Pawn): numbe
   let size;
   switch (pawn) {
     case Pawn.Rock:
-      size = 2;
+      size = 1;
       break;
     case Pawn.Paper:
-      size = 5;
+      size = 3;
       break;
     case Pawn.Scissor:
-      size = 4;
+      size = 2;
       break;
   }
 
-  const accessibleCells = circle(G, pawnPosition, size).filter(pos => hasLos(G, pawnPosition, pos, [player]));
+  const accessibleCells = square(G, pawnPosition, size).filter(pos => hasLos(G, pawnPosition, pos, [player]));
 
   const [pi, pj] = position(G.board, pawnPosition);
 
@@ -116,24 +116,20 @@ export const accessibleCells = (G: GameState, player: Player, pawn: Pawn): numbe
     case Pawn.Scissor:
       return accessibleCells.filter(pos => {
         const [i, j] = position(G.board, pos);
-        return i === pi || j === pi || Math.abs(i - pi) === Math.abs(j - pj);
+        return i === pi || j === pj || Math.abs(i - pi) === Math.abs(j - pj);
       });
   }
 
   return [];
 };
 
-function dist([i1, j1]: [number, number], [i2, j2]: [number, number]) {
-  return Math.abs(i1 - i2) + Math.abs(j1 - j2);
-}
-
-const circle = (G: GameState, from: number, size: number): number[] => {
+const square = (G: GameState, from: number, size: number): number[] => {
   const result = [];
   const [pi, pj] = position(G.board, from);
 
-  for (let i = pi - size; i < pi + size; i++) {
-    for (let j = pj - size; j < pj + size; j++) {
-      if (i >= 0 && i < G.board.size && j >= 0 && j < G.board.size && dist([pi, pj], [i, j]) <= size) {
+  for (let i = pi - size; i < pi + size + 1; i++) {
+    for (let j = pj - size; j < pj + size + 1; j++) {
+      if (i >= 0 && i < G.board.size && j >= 0 && j < G.board.size) {
         result.push(index(G.board, i, j));
       }
     }
@@ -166,7 +162,7 @@ const hasLos = (G: GameState, from: number, to: number, nonBlockingPlayers: Play
   for (const [j, i] of line) {
     const pos = index(G.board, i, j);
 
-    if (pos !== from) {
+    if (pos !== from && pos !== to) {
       const cell = at(G, pos);
       if (!!cell && !nonBlockingPlayers.includes(cell.player)) {
         return false;

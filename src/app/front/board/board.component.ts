@@ -65,11 +65,7 @@ export class BoardComponent extends BoardBase implements OnInit {
         this.instruction = 'Select cell in which to place ' + pawn;
 
         this.fillTargetable(false);
-
-        for (const position of this.getAccessibleCells(this.playerID, pawn)) {
-          const [x, y] = this.position(position);
-          this.targetable[x][y] = true;
-        }
+        this.fillTargetableAt(this.getAccessibleCells(this.playerID, pawn), true);
 
         break;
     }
@@ -78,7 +74,17 @@ export class BoardComponent extends BoardBase implements OnInit {
   onClick(position: number) {
     switch (this.ctx.phase) {
       case 'place':
-        this.placeSelectedPawnAt(position);
+        if (!this.selectedPawn) {
+          return;
+        }
+
+        this.moves.placePawn(position, this.selectedPawn);
+
+        const playerPawns = this.getPlayerPawns(this.playerID);
+        if (playerPawns.length === 1) {
+          this.select(playerPawns[0].pawn);
+        }
+
         break;
       case 'play':
         const [x, y] = this.position(position);
@@ -97,6 +103,41 @@ export class BoardComponent extends BoardBase implements OnInit {
     }
   }
 
+  onEnter(position: number) {
+    switch (this.ctx.phase) {
+      case 'place':
+        break;
+      case 'play':
+        if (this.selectedPawn) {
+          return;
+        }
+
+        const [x, y] = this.position(position);
+        const cell = this.board[x][y];
+
+        if (!!cell && cell.player === this.playerID) {
+          const accessibleCells = this.getAccessibleCells(this.playerID, cell.pawn);
+          this.fillTargetableAt(accessibleCells, true);
+        }
+
+        break;
+    }
+  }
+
+  onLeave(_: number) {
+    switch (this.ctx.phase) {
+      case 'place':
+        break;
+      case 'play':
+        if (this.selectedPawn) {
+          return;
+        }
+
+        this.fillTargetable(false);
+        break;
+    }
+  }
+
   index(i: number, j: number): number {
     return i * this.state.board.size + j;
   }
@@ -109,7 +150,7 @@ export class BoardComponent extends BoardBase implements OnInit {
     return this.playerCustomizationService.getScheme(this.playerID).bgSelected;
   }
 
-  colorAt(i: number, j: number) {
+  borderColorAt(i: number, j: number) {
     const cell = this.board[i][j];
 
     switch (this.ctx.phase) {
@@ -117,27 +158,45 @@ export class BoardComponent extends BoardBase implements OnInit {
         if (cell) {
           return this.playerCustomizationService.getScheme(cell.player).bgSelected;
         }
-
-        if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
-          return this.playerCustomizationService.getScheme(this.playerID).bgLight;
-        }
         break;
       case 'play':
         if (cell) {
-          if (cell.player === this.playerID && (!this.selectedPawn || cell.pawn === this.selectedPawn)) {
-            return this.playerCustomizationService.getScheme(cell.player).bgSelected;
+          if (cell.player === this.playerID) {
+            if (!this.selectedPawn || cell.pawn === this.selectedPawn) {
+              return this.playerCustomizationService.getScheme(cell.player).bgSelected;
+            } else {
+              return this.playerCustomizationService.getScheme(cell.player).bgLight;
+            }
           } else {
-            return this.playerCustomizationService.getScheme(cell.player).bgLight;
+            if (this.targetable[i][j]) {
+              return this.playerCustomizationService.getScheme(cell.player).bgSelected;
+            } else {
+              return this.playerCustomizationService.getScheme(cell.player).bgLight;
+            }
           }
         }
+        break;
+    }
 
+    return 'inherit';
+  }
+
+  backgroundColorAt(i: number, j: number) {
+    switch (this.ctx.phase) {
+      case 'place':
         if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
+          return this.playerCustomizationService.getScheme(this.playerID).bgLight;
+        }
+
+        break;
+      case 'play':
+        if (this.targetable && this.targetable[i][j]) {
           return this.playerCustomizationService.getScheme(this.playerID).bgLight;
         }
         break;
     }
 
-    return null;
+    return 'inherit';
   }
 
   private update() {
@@ -196,25 +255,11 @@ export class BoardComponent extends BoardBase implements OnInit {
       this.select(this.pawnToPlace[0]);
     }
   }
-
   private updateInPlayPhase() {
     this.instruction = 'Select a pawn to move';
     this.selectedPawn = null;
 
     this.fillTargetable(false);
-  }
-
-  private placeSelectedPawnAt(position: number) {
-    if (!this.selectedPawn) {
-      return;
-    }
-
-    this.moves.placePawn(position, this.selectedPawn);
-
-    const playerPawns = this.getPlayerPawns(this.playerID);
-    if (playerPawns.length === 1) {
-      this.select(playerPawns[0].pawn);
-    }
   }
 
   private getStartingArea(player: Player): number[] {
@@ -253,6 +298,13 @@ export class BoardComponent extends BoardBase implements OnInit {
       for (let j = 0; j < this.state.board.size; j++) {
         this.targetable[i][j] = b;
       }
+    }
+  }
+
+  private fillTargetableAt(positions: number[], b: boolean) {
+    for (const position of positions) {
+      const [i, j] = this.position(position);
+      this.targetable[i][j] = b;
     }
   }
 }

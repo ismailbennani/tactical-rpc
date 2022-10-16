@@ -11,9 +11,10 @@
       <table class="m-2" *ngIf="board">
         <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
           <td *ngFor="let _ of [].constructor(state.board.size); let j = index" class="p-2">
-            <div [ngStyle]="{ backgroundColor: colorAt(i, j) }"
-                 class="w-12 h-12" [class.border-2]="!board[i][j]?.player">
-              <button class="w-full h-full" (click)="onClick(index(i, j))">
+            <div [ngStyle]="{ borderColor: borderColorAt(i, j), backgroundColor: backgroundColorAt(i, j) }"
+                 class="w-12 h-12 border-2">
+              <button class="w-full h-full" (click)="onClick(index(i, j))" (mouseenter)="onEnter(index(i, j))"
+                      (mouseleave)="onLeave(index(i, j))">
                 <div class="flex items-center justify-center" *ngIf="board[i][j]">
                   <app-pawn [pawn]="board[i][j].pawn" size="xl"></app-pawn>
                 </div>
