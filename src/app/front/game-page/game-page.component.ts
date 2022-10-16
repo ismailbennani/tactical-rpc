@@ -13,8 +13,6 @@ import { Player } from '../../game/game-types';
   styleUrls: ['./game-page.component.scss'],
 })
 export class GamePageComponent implements OnInit {
-  private readonly storageKey = 'tactical-rpc';
-
   public config: GameConfig;
 
   public currentPlayer = null;
@@ -31,29 +29,28 @@ export class GamePageComponent implements OnInit {
   ngOnInit(): void {
     const game = new GameBuilder(10).build();
 
-    this.config = { game, board: BoardComponent, multiplayer: Local({ persist: true, storageKey: this.storageKey }) };
+    this.config = {
+      game,
+      board: BoardComponent,
+      multiplayer: Local({ persist: true, storageKey: GameInfoService.StorageKey }),
+    };
 
     this.gameInfoService.change$.subscribe(() => {
-      this.currentPlayer = this.gameInfoService.currentPlayer;
+      this.update();
     });
+
+    this.update();
   }
 
   color(player: Player) {
     return this.playerCustomizationService.getScheme(player).primary;
   }
 
-  resetState() {
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith(this.storageKey)) {
-        localStorage.removeItem(key);
-      }
-    }
-
-    location.reload();
-  }
-
   identity(x): any {
     return x;
+  }
+
+  private update() {
+    this.currentPlayer = this.gameInfoService.currentPlayer;
   }
 }

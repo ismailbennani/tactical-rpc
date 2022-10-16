@@ -8,9 +8,20 @@ import { PawnComponent } from './pawn/pawn.component';
 import { MatButtonModule } from '@angular/material/button';
 import { SvgIconsModule } from '@ngneat/svg-icon';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatIconModule } from '@angular/material/icon';
+import { RouterLink } from '@angular/router';
 
 @NgModule({
   declarations: [GamePageComponent, BoardComponent, PawnComponent],
-  imports: [CommonModule, FrontRoutingModule, BoardgameIoModule, MatButtonModule, SvgIconsModule, MatDividerModule],
+  imports: [
+    CommonModule,
+    FrontRoutingModule,
+    BoardgameIoModule,
+    MatButtonModule,
+    SvgIconsModule,
+    MatDividerModule,
+    MatIconModule,
+    RouterLink,
+  ],
 })
 export class FrontModule {}

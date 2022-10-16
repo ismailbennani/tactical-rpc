@@ -36,13 +36,32 @@ export class PlayerCustomizationService {
         return this.defaultScheme;
       }
 
-      const scheme = this.predefinedSchemes[this.nextPredefinedSchemeToUse];
-      this.nextPredefinedSchemeToUse = (this.nextPredefinedSchemeToUse + 1) % this.predefinedSchemes.length;
+      let scheme = this.knownPlayerSchemes(player);
+
+      if (!scheme) {
+        scheme = this.predefinedSchemes[this.nextPredefinedSchemeToUse];
+        this.nextPredefinedSchemeToUse = (this.nextPredefinedSchemeToUse + 1) % this.predefinedSchemes.length;
+      }
+
+      if (!scheme) {
+        throw new Error(`Could not determine scheme for player ${player}`);
+      }
 
       this.playerSchemeMapping.set(player, scheme);
     }
 
     return this.playerSchemeMapping.get(player);
+  }
+
+  private knownPlayerSchemes(player: Player) {
+    switch (player) {
+      case '0':
+        return this.predefinedSchemes[0];
+      case '1':
+        return this.predefinedSchemes[1];
+    }
+
+    return null;
   }
 }
 

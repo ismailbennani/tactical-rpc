@@ -8,7 +8,7 @@
     <mat-divider></mat-divider>
 
     <div class="w-full">
-      <table class="m-2">
+      <table class="m-2" *ngIf="board">
         <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
           <td *ngFor="let _ of [].constructor(state.board.size); let j = index" class="p-2">
             <div [ngStyle]="{ backgroundColor: colorAt(i, j) }"

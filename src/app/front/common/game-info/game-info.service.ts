@@ -7,6 +7,8 @@ import { Observable, Subject } from 'rxjs';
   providedIn: 'root',
 })
 export class GameInfoService {
+  public static readonly StorageKey = 'tactical-rpc';
+
   private G: GameState;
   private ctx: Ctx;
 

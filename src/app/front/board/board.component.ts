@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BoardBase } from '../../boardgame-io-angular/board-base';
 import { BoardConfig, OBSERVABLE_BOARD_CONFIG } from '../../boardgame-io-angular/config';
@@ -13,7 +13,7 @@ import { GameInfoService } from '../common/game-info/game-info.service';
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss'],
 })
-export class BoardComponent extends BoardBase {
+export class BoardComponent extends BoardBase implements OnInit {
   public get state(): GameState {
     return this.G;
   }
@@ -34,16 +34,20 @@ export class BoardComponent extends BoardBase {
   private config: BoardConfig;
 
   constructor(
-    @Inject(OBSERVABLE_BOARD_CONFIG) boardConfig$: Observable<BoardConfig>,
+    @Inject(OBSERVABLE_BOARD_CONFIG) private boardConfig$: Observable<BoardConfig>,
     private playerCustomizationService: PlayerCustomizationService,
     private gameInfoService: GameInfoService
   ) {
     super(boardConfig$);
+  }
 
-    boardConfig$.subscribe(c => {
+  ngOnInit() {
+    this.boardConfig$.subscribe(c => {
       this.config = c;
       this.update();
     });
+
+    this.update();
   }
 
   select(pawn: Pawn) {

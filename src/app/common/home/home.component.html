@@ -1,7 +1,26 @@
 <div class="w-full h-full flex items-center justify-center">
-  <button mat-raised-button color="primary" [routerLink]="'/game'">
-    <div class="text-5xl p-6">
-      Play
+  <div class="flex flex-col gap-12 justify-items-stretch">
+    <div class="text-center text-6xl font-bold flex flex-col">
+      Tactical RPC
+      <div class="flex items-center justify-evenly">
+        <svg-icon [key]="rockIcon.name" size="xxl"></svg-icon>
+        <svg-icon [key]="paperIcon.name" size="xxl"></svg-icon>
+        <svg-icon [key]="scissorsIcon.name" size="xxl"></svg-icon>
+      </div>
     </div>
-  </button>
+
+    <div class="flex flex-col justify-items-stretch gap-4">
+      <button mat-raised-button color="primary" [routerLink]="'/game'">
+        <div class="text-5xl p-6">
+          Continue
+        </div>
+      </button>
+
+      <button mat-raised-button color="primary" (click)="newGame()" [routerLink]="'/game'">
+        <div class="text-5xl p-6">
+          New game
+        </div>
+      </button>
+    </div>
+  </div>
 </div>
