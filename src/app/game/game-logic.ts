@@ -1,24 +1,6 @@
 import { Board, GameState, Pawn, PAWNS, Player } from './game-types';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { at } from './game-utils';
-
-function index(board: Board, i: number, j: number): number {
-  return i * board.size + j;
-}
-
-function position(index: number): [number, number] {
-  return [Math.floor(index / this.state.board.size), index % this.state.board.size];
-}
-
-function getStartingArea(G: GameState, player: Player): number[] {
-  const entry = G.startingAreas.find(([p, _]) => p === player);
-  if (!entry) {
-    return [];
-  }
-  const [_, area] = entry;
-
-  return area;
-}
+import { at, getStartingArea, index } from './game-utils';
 
 export const startingArea = (board: Board, player: Player): number[] => {
   const noMansLandSize = Math.max(1, Math.floor(board.size / 4));

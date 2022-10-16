@@ -1,4 +1,4 @@
-import { Cell, GameState, Pawn, Player } from './game-types';
+import { Board, Cell, GameState, Pawn, Player } from './game-types';
 
 export const at = (G: GameState, position: number): Cell => {
   for (const [player, pawns] of G.playersPawns) {
@@ -28,3 +28,20 @@ export const positionOf = (G: GameState, player: Player, pawn: Pawn) => {
 };
 
 export const hasPawn = (G: GameState, player: Player, pawn: Pawn) => !!positionOf(G, player, pawn);
+
+export const index = (board: Board, i: number, j: number): number => i * board.size + j;
+
+export const position = (board: Board, index: number): [number, number] => [
+  Math.floor(index / board.size),
+  index % board.size,
+];
+
+export const getStartingArea = (G: GameState, player: Player): number[] => {
+  const entry = G.startingAreas.find(([p, _]) => p === player);
+  if (!entry) {
+    return [];
+  }
+  const [_, area] = entry;
+
+  return area;
+};
