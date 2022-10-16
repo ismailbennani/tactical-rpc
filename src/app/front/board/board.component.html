@@ -1,31 +1,53 @@
 <div *ngIf="state" class="text-center">
-  <div [ngStyle]="{ color: color() }" *ngIf="!isPlayerTurn">PLAYER {{ playerID }}</div>
-  <div [ngStyle]="{ color: color() }" class="font-bold" *ngIf="isPlayerTurn">> PLAYER {{ playerID }}</div>
-  <div *ngIf="instruction && isPlayerTurn">{{ instruction }}</div>
 
-  <table class="m-2">
-    <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
-      <td *ngFor="let _ of [].constructor(state.board.size); let j = index" class="p-2">
-        <div [ngStyle]="{ backgroundColor: colorAt(i, j) }"
-             class="w-12 h-12" [class.border-2]="!board[i][j]?.player">
-          <button class="w-full h-full" (click)="onClick(index(i, j))">
-            <div class="flex items-center justify-center" *ngIf="board[i][j]">
-              <app-pawn [pawn]="board[i][j].pawn" size="xl"></app-pawn>
-            </div>
-          </button>
-        </div>
-      </td>
-    </tr>
-  </table>
+  <div class="w-full h-full flex flex-col">
+    <div class="w-full p-2">
+      <div [ngStyle]="{ color: color() }" class="font-bold">PLAYER {{ playerID }}</div>
+    </div>
 
-  <div *ngIf="ctx.phase === 'place'" class="w-full flex items-center justify-evenly">
-    SELECT
-    <button mat-stroked-button *ngFor="let pawn of pawnToPlace"
-            [class.bg-gray-300]="pawn === selectedPawn"
-            (click)="select(pawn)">
-      <div class="py-2">
-        <app-pawn [pawn]="pawn" size="xxl"></app-pawn>
+    <mat-divider></mat-divider>
+
+    <div class="w-full h-full flex">
+      <div class="w-32 h-full p-2 text-left">
+        Players:
+        <ul>
+          <li *ngFor="let player of players" [class.font-bold]="player === playerID" class="pl-4">- {{ player }}</li>
+        </ul>
       </div>
-    </button>
+
+      <mat-divider [vertical]="true"></mat-divider>
+
+      <div class="flex-grow h-full">
+        <table class="m-2">
+          <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
+            <td *ngFor="let _ of [].constructor(state.board.size); let j = index" class="p-2">
+              <div [ngStyle]="{ backgroundColor: colorAt(i, j) }"
+                   class="w-12 h-12" [class.border-2]="!board[i][j]?.player">
+                <button class="w-full h-full" (click)="onClick(index(i, j))">
+                  <div class="flex items-center justify-center" *ngIf="board[i][j]">
+                    <app-pawn [pawn]="board[i][j].pawn" size="xl"></app-pawn>
+                  </div>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div *ngIf="ctx.phase === 'place'" class="w-full flex flex-col items-center p-2">
+      <div *ngIf="instruction">{{ instruction }}</div>
+      <div class="w-full flex items-center justify-evenly p-2">
+        <button mat-stroked-button *ngFor="let pawn of pawnToPlace"
+                [class.bg-gray-300]="pawn === selectedPawn"
+                (click)="select(pawn)">
+          <div class="py-2">
+            <app-pawn [pawn]="pawn" size="xxl"></app-pawn>
+          </div>
+        </button>
+      </div>
+    </div>
   </div>
 </div>

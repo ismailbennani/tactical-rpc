@@ -26,10 +26,10 @@ export class GameInfoService {
   }
 
   get currentPlayer(): Player {
-    return this.ctx.currentPlayer;
+    return this.ctx?.currentPlayer;
   }
 
   get players(): Player[] {
-    return this.ctx.playOrder;
+    return this.ctx?.playOrder ?? [];
   }
 }

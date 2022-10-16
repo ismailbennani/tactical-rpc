@@ -22,10 +22,6 @@ export class BoardComponent extends BoardBase {
     return this.ctx;
   }
 
-  public get isPlayerTurn(): boolean {
-    return this.playerID === this.context.currentPlayer;
-  }
-
   public board: Cell[][];
   public targetable: boolean[][];
 
@@ -33,6 +29,7 @@ export class BoardComponent extends BoardBase {
   public selectedPawn: Pawn;
 
   public instruction: string;
+  public players: Player[] = [];
 
   private config: BoardConfig;
 
@@ -108,6 +105,8 @@ export class BoardComponent extends BoardBase {
   private update() {
     this.gameInfoService.update({ G: this.state, ctx: this.context });
 
+    this.players = this.gameInfoService.players;
+
     this.updateBoard();
 
     switch (this.ctx.phase) {
@@ -161,12 +160,16 @@ export class BoardComponent extends BoardBase {
     this.pawnToPlace = PAWNS.filter(p => !hasPawn(this.state, this.playerID, p));
     this.selectedPawn = null;
 
-    this.instruction = 'Select pawn below';
+    this.instruction = 'Select pawn';
 
     for (let i = 0; i < this.state.board.size; i++) {
       for (let j = 0; j < this.state.board.size; j++) {
         this.targetable[i][j] = false;
       }
+    }
+
+    if (this.pawnToPlace.length === 1) {
+      this.select(this.pawnToPlace[0]);
     }
   }
 

@@ -17,7 +17,6 @@ export class GamePageComponent implements OnInit {
 
   public config: GameConfig;
 
-  public players = [];
   public currentPlayer = null;
 
   public get debug() {
@@ -35,7 +34,6 @@ export class GamePageComponent implements OnInit {
     this.config = { game, board: BoardComponent, multiplayer: Local({ persist: true, storageKey: this.storageKey }) };
 
     this.gameInfoService.change$.subscribe(() => {
-      this.players = this.gameInfoService.players;
       this.currentPlayer = this.gameInfoService.currentPlayer;
     });
   }
