@@ -6,6 +6,7 @@ import { Cell, GameState, Pawn, PAWNS, Player } from '../../game/game-types';
 import { hasPawn } from '../../game/game-utils';
 import { PlayerCustomizationService } from '../common/player-customization/player-customization.service';
 import { Ctx } from 'boardgame.io';
+import { GameInfoService } from '../common/game-info/game-info.service';
 
 @Component({
   selector: 'app-board',
@@ -37,7 +38,8 @@ export class BoardComponent extends BoardBase {
 
   constructor(
     @Inject(OBSERVABLE_BOARD_CONFIG) boardConfig$: Observable<BoardConfig>,
-    private playerCustomization: PlayerCustomizationService
+    private playerCustomizationService: PlayerCustomizationService,
+    private gameInfoService: GameInfoService
   ) {
     super(boardConfig$);
 
@@ -73,7 +75,7 @@ export class BoardComponent extends BoardBase {
   }
 
   color(): string {
-    return this.playerCustomization.getScheme(this.playerID).bgSelected;
+    return this.playerCustomizationService.getScheme(this.playerID).bgSelected;
   }
 
   colorAt(i: number, j: number) {
@@ -82,19 +84,19 @@ export class BoardComponent extends BoardBase {
     switch (this.ctx.phase) {
       case 'place':
         if (player) {
-          return this.playerCustomization.getScheme(player).bgSelected;
+          return this.playerCustomizationService.getScheme(player).bgSelected;
         }
 
         if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
-          return this.playerCustomization.getScheme(this.playerID).bgLight;
+          return this.playerCustomizationService.getScheme(this.playerID).bgLight;
         }
         break;
       case 'play':
         if (player) {
           if (player === this.playerID) {
-            return this.playerCustomization.getScheme(player).bgSelected;
+            return this.playerCustomizationService.getScheme(player).bgSelected;
           } else {
-            return this.playerCustomization.getScheme(player).bgLight;
+            return this.playerCustomizationService.getScheme(player).bgLight;
           }
         }
         break;
@@ -104,6 +106,8 @@ export class BoardComponent extends BoardBase {
   }
 
   private update() {
+    this.gameInfoService.update({ G: this.state, ctx: this.context });
+
     this.updateBoard();
 
     switch (this.ctx.phase) {

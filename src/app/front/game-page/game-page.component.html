@@ -1,4 +1,21 @@
-<div class="w-full h-full flex items-center justify-center">
-  <bio-client [bioGameConfig]="config" gameID="single" [debug]="debug">
-  </bio-client>
+<div class="w-full h-16 border-b-2 p-4 flex items-center">
+  <button mat-stroked-button (click)="resetState()">
+    Reset
+  </button>
+</div>
+<div class="w-full h-full flex items-center justify-evenly">
+  <ng-container *ngIf="!players?.length">
+    <bio-client [bioGameConfig]="config" gameID="single" [debug]="true"></bio-client>
+  </ng-container>
+  <ng-container *ngIf="players?.length">
+    <ng-container *ngFor="let player of players; let i = index; trackBy: identity">
+      <mat-divider [vertical]="true" class="h-full" *ngIf="i > 0"></mat-divider>
+
+      <div class="flex-grow h-full flex items-center justify-center relative"
+           [class.border-2]="currentPlayer === player"
+           [ngStyle]="{ borderColor: currentPlayer === player ? color(player) : null }">
+        <bio-client [bioGameConfig]="config" gameID="single" [playerID]="player" [debug]="debug"></bio-client>
+      </div>
+    </ng-container>
+  </ng-container>
 </div>

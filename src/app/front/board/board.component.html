@@ -1,7 +1,7 @@
 <div *ngIf="state" class="text-center">
   <div [ngStyle]="{ color: color() }" *ngIf="!isPlayerTurn">PLAYER {{ playerID }}</div>
   <div [ngStyle]="{ color: color() }" class="font-bold" *ngIf="isPlayerTurn">> PLAYER {{ playerID }}</div>
-  <div *ngIf="instruction">{{ instruction }}</div>
+  <div *ngIf="instruction && isPlayerTurn">{{ instruction }}</div>
 
   <table class="m-2">
     <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
