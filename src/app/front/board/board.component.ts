@@ -1,17 +1,17 @@
-import { Component, Inject, OnChanges, OnInit, SimpleChanges } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BoardBase } from '../../boardgame-io-angular/board-base';
 import { BoardConfig, OBSERVABLE_BOARD_CONFIG } from '../../boardgame-io-angular/config';
 import { Cell, GameState, Pawn, PAWNS, Player } from '../../game/game-types';
 import { hasPawn } from '../../game/game-utils';
-import { getPlayerColor, getPlayerColorLight } from '../common/utils';
+import { PlayerCustomizationService } from '../common/player-customization/player-customization.service';
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss'],
 })
-export class BoardComponent extends BoardBase implements OnInit, OnChanges {
+export class BoardComponent extends BoardBase {
   public get state(): GameState {
     return this.G;
   }
@@ -30,18 +30,13 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
 
   private knownPositions: Map<Player, Map<Pawn, number>> = new Map<Player, Map<Pawn, number>>();
 
-  constructor(@Inject(OBSERVABLE_BOARD_CONFIG) boardConfig$: Observable<BoardConfig>) {
+  constructor(
+    @Inject(OBSERVABLE_BOARD_CONFIG) boardConfig$: Observable<BoardConfig>,
+    private playerCustomization: PlayerCustomizationService
+  ) {
     super(boardConfig$);
-  }
 
-  ngOnInit(): void {
-    this.update();
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['playerID'] && changes['playerID'].currentValue != changes['playerID'].previousValue) {
-      this.update();
-    }
+    boardConfig$.subscribe(_ => this.update());
   }
 
   select(pawn: Pawn) {
@@ -70,7 +65,7 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
   }
 
   color(): string {
-    return getPlayerColor(this.player);
+    return this.playerCustomization.getScheme(this.player).bgSelected;
   }
 
   colorAt(i: number, j: number) {
@@ -79,19 +74,19 @@ export class BoardComponent extends BoardBase implements OnInit, OnChanges {
     switch (this.ctx.phase) {
       case 'place':
         if (player) {
-          return getPlayerColor(player);
+          return this.playerCustomization.getScheme(player).bgSelected;
         }
 
         if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
-          return getPlayerColorLight(this.player);
+          return this.playerCustomization.getScheme(this.player).bgLight;
         }
         break;
       case 'play':
         if (player) {
           if (player === this.player) {
-            return getPlayerColor(player);
+            return this.playerCustomization.getScheme(player).bgSelected;
           } else {
-            return getPlayerColorLight(player);
+            return this.playerCustomization.getScheme(player).bgLight;
           }
         }
         break;
