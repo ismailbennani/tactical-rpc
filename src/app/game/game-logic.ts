@@ -1,6 +1,6 @@
 import { Board, GameState, Pawn, PAWNS, Player } from './game-types';
 import { INVALID_MOVE } from 'boardgame.io/core';
-import { at, getStartingArea, index } from './game-utils';
+import { accessibleCells, at, getStartingArea, index, removePawn, resolveFight } from './game-utils';
 
 export const startingArea = (board: Board, player: Player): number[] => {
   const noMansLandSize = Math.max(1, Math.floor(board.size / 4));
@@ -34,7 +34,7 @@ export const placePawn = (
   { G, playerID: player }: { G: GameState; playerID: Player },
   position: number,
   pawn: Pawn
-): typeof INVALID_MOVE | GameState => {
+): typeof INVALID_MOVE | void => {
   if (
     isNaN(position) ||
     position < 0 ||
@@ -58,6 +58,57 @@ export const placePawn = (
   }
 
   playerPawns.push({ pawn, position });
+
+  return void 0;
+};
+
+export const movePawn = (
+  { G, playerID: player }: { G: GameState; playerID: Player },
+  pawn: Pawn,
+  newPos: number
+): typeof INVALID_MOVE | void => {
+  if (isNaN(newPos) || newPos < 0 || newPos >= G.board.size * G.board.size) {
+    return INVALID_MOVE;
+  }
+
+  const playerEntry = G.playersPawns.find(([p, _]) => p === player);
+  if (!playerEntry) {
+    throw new Error(`Unknown player ${player}`);
+  }
+
+  const playerPawn = playerEntry[1]?.find(p => p.pawn === pawn);
+  const currentPosition = playerEntry[1]?.find(p => p.pawn === pawn)?.position;
+  if (currentPosition === null || currentPosition === undefined) {
+    return INVALID_MOVE;
+  }
+
+  if (!accessibleCells(G, player, playerPawn.pawn).includes(newPos)) {
+    return INVALID_MOVE;
+  }
+
+  const pawnAtNewPos = at(G, newPos);
+
+  if (pawnAtNewPos) {
+    if (pawnAtNewPos.player === player) {
+      return INVALID_MOVE;
+    }
+
+    switch (resolveFight(pawn, pawnAtNewPos.pawn)) {
+      case 'victory':
+        removePawn(G, pawnAtNewPos.player, pawnAtNewPos.pawn);
+        playerPawn.position = newPos;
+        break;
+      case 'defeat':
+        removePawn(G, player, pawn);
+        break;
+      case 'tie':
+        return INVALID_MOVE;
+      default:
+        throw new Error(`Could not determine result of fight between ${pawn} and ${pawnAtNewPos.pawn}`);
+    }
+  } else {
+    playerPawn.position = newPos;
+  }
 
   return void 0;
 };

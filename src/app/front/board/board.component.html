@@ -26,9 +26,9 @@
 
     <mat-divider></mat-divider>
 
-    <div *ngIf="ctx.phase === 'place'" class="w-full flex flex-col items-center p-2">
+    <div class="w-full flex flex-col items-center p-2">
       <div *ngIf="instruction">{{ instruction }}</div>
-      <div class="w-full flex items-center justify-evenly p-2">
+      <div class="w-full flex items-center justify-evenly p-2" *ngIf="ctx.phase === 'place'">
         <button mat-stroked-button *ngFor="let pawn of pawnToPlace"
                 [class.bg-gray-300]="pawn === selectedPawn"
                 (click)="select(pawn)">

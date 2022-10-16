@@ -2,8 +2,8 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { Observable } from 'rxjs';
 import { BoardBase } from '../../boardgame-io-angular/board-base';
 import { BoardConfig, OBSERVABLE_BOARD_CONFIG } from '../../boardgame-io-angular/config';
-import { Cell, GameState, Pawn, PAWNS, Player } from '../../game/game-types';
-import { hasPawn } from '../../game/game-utils';
+import { Cell, GameState, Pawn, PAWNS, Player, PositionedPawn } from '../../game/game-types';
+import { accessibleCells, hasPawn } from '../../game/game-utils';
 import { PlayerCustomizationService } from '../common/player-customization/player-customization.service';
 import { Ctx } from 'boardgame.io';
 import { GameInfoService } from '../common/game-info/game-info.service';
@@ -29,7 +29,6 @@ export class BoardComponent extends BoardBase implements OnInit {
   public selectedPawn: Pawn;
 
   public instruction: string;
-  public players: Player[] = [];
 
   private config: BoardConfig;
 
@@ -53,17 +52,48 @@ export class BoardComponent extends BoardBase implements OnInit {
   select(pawn: Pawn) {
     this.selectedPawn = pawn;
 
-    this.instruction = 'Select cell in which to place ' + pawn;
+    switch (this.ctx.phase) {
+      case 'place':
+        this.instruction = 'Select cell in which to place ' + pawn;
 
-    for (const position of this.getStartingArea(this.playerID)) {
-      const [x, y] = this.position(position);
-      this.targetable[x][y] = true;
+        for (const position of this.getStartingArea(this.playerID)) {
+          const [x, y] = this.position(position);
+          this.targetable[x][y] = true;
+        }
+        break;
+      case 'play':
+        this.instruction = 'Select cell in which to place ' + pawn;
+
+        this.fillTargetable(false);
+
+        for (const position of this.getAccessibleCells(this.playerID, pawn)) {
+          const [x, y] = this.position(position);
+          this.targetable[x][y] = true;
+        }
+
+        break;
     }
   }
 
   onClick(position: number) {
-    if (this.ctx.phase === 'place') {
-      this.placeSelectedPawnAt(position);
+    switch (this.ctx.phase) {
+      case 'place':
+        this.placeSelectedPawnAt(position);
+        break;
+      case 'play':
+        const [x, y] = this.position(position);
+        const cell = this.board[x][y];
+
+        if (cell && cell.player === this.playerID) {
+          this.select(cell.pawn);
+          return;
+        }
+
+        if (this.selectedPawn) {
+          this.moves.movePawn(this.selectedPawn, position);
+        }
+
+        break;
     }
   }
 
@@ -80,12 +110,12 @@ export class BoardComponent extends BoardBase implements OnInit {
   }
 
   colorAt(i: number, j: number) {
-    const player = this.board[i][j]?.player;
+    const cell = this.board[i][j];
 
     switch (this.ctx.phase) {
       case 'place':
-        if (player) {
-          return this.playerCustomizationService.getScheme(player).bgSelected;
+        if (cell) {
+          return this.playerCustomizationService.getScheme(cell.player).bgSelected;
         }
 
         if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
@@ -93,12 +123,16 @@ export class BoardComponent extends BoardBase implements OnInit {
         }
         break;
       case 'play':
-        if (player) {
-          if (player === this.playerID) {
-            return this.playerCustomizationService.getScheme(player).bgSelected;
+        if (cell) {
+          if (cell.player === this.playerID && (!this.selectedPawn || cell.pawn === this.selectedPawn)) {
+            return this.playerCustomizationService.getScheme(cell.player).bgSelected;
           } else {
-            return this.playerCustomizationService.getScheme(player).bgLight;
+            return this.playerCustomizationService.getScheme(cell.player).bgLight;
           }
+        }
+
+        if (this.selectedPawn != null && this.targetable && this.targetable[i][j]) {
+          return this.playerCustomizationService.getScheme(this.playerID).bgLight;
         }
         break;
     }
@@ -108,8 +142,6 @@ export class BoardComponent extends BoardBase implements OnInit {
 
   private update() {
     this.gameInfoService.update({ G: this.state, ctx: this.context });
-
-    this.players = this.gameInfoService.players;
 
     this.updateBoard();
 
@@ -132,11 +164,7 @@ export class BoardComponent extends BoardBase implements OnInit {
         this.board[i] = Array(this.state.board.size).fill(null);
       }
     } else {
-      for (let i = 0; i < this.state.board.size; i++) {
-        for (let j = 0; j < this.state.board.size; j++) {
-          this.board[i][j] = null;
-        }
-      }
+      this.fillBoard(null);
     }
 
     if (!this.targetable) {
@@ -145,11 +173,7 @@ export class BoardComponent extends BoardBase implements OnInit {
         this.targetable[i] = Array(this.state.board.size).fill(false);
       }
     } else {
-      for (let i = 0; i < this.state.board.size; i++) {
-        for (let j = 0; j < this.state.board.size; j++) {
-          this.targetable[i][j] = false;
-        }
-      }
+      this.fillTargetable(false);
     }
 
     for (const [player, pawns] of this.state.playersPawns) {
@@ -166,11 +190,7 @@ export class BoardComponent extends BoardBase implements OnInit {
 
     this.instruction = 'Select pawn';
 
-    for (let i = 0; i < this.state.board.size; i++) {
-      for (let j = 0; j < this.state.board.size; j++) {
-        this.targetable[i][j] = false;
-      }
-    }
+    this.fillTargetable(false);
 
     if (this.pawnToPlace.length === 1) {
       this.select(this.pawnToPlace[0]);
@@ -178,7 +198,10 @@ export class BoardComponent extends BoardBase implements OnInit {
   }
 
   private updateInPlayPhase() {
-    this.instruction = null;
+    this.instruction = 'Select a pawn to move';
+    this.selectedPawn = null;
+
+    this.fillTargetable(false);
   }
 
   private placeSelectedPawnAt(position: number) {
@@ -187,6 +210,11 @@ export class BoardComponent extends BoardBase implements OnInit {
     }
 
     this.moves.placePawn(position, this.selectedPawn);
+
+    const playerPawns = this.getPlayerPawns(this.playerID);
+    if (playerPawns.length === 1) {
+      this.select(playerPawns[0].pawn);
+    }
   }
 
   private getStartingArea(player: Player): number[] {
@@ -197,5 +225,34 @@ export class BoardComponent extends BoardBase implements OnInit {
     const [_, area] = entry;
 
     return area;
+  }
+
+  private getAccessibleCells(player: Player, pawn: Pawn): number[] {
+    return accessibleCells(this.state, player, pawn);
+  }
+
+  private getPlayerPawns(player: Player): PositionedPawn[] {
+    const playerEntry = this.state.playersPawns.find(([p, _]) => p === player);
+    if (!playerEntry || !playerEntry[1]) {
+      throw new Error(`Unknown player ${player}`);
+    }
+
+    return playerEntry[1];
+  }
+
+  private fillBoard(c: Cell) {
+    for (let i = 0; i < this.state.board.size; i++) {
+      for (let j = 0; j < this.state.board.size; j++) {
+        this.board[i][j] = c;
+      }
+    }
+  }
+
+  private fillTargetable(b: boolean) {
+    for (let i = 0; i < this.state.board.size; i++) {
+      for (let j = 0; j < this.state.board.size; j++) {
+        this.targetable[i][j] = b;
+      }
+    }
   }
 }

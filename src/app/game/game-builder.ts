@@ -1,6 +1,6 @@
 import { BoardShape, GameState } from './game-types';
 import { Ctx, Game } from 'boardgame.io';
-import { endGame, endPlacePhase, placePawn, startingArea } from './game-logic';
+import { endGame, endPlacePhase, movePawn, placePawn, startingArea } from './game-logic';
 
 export class GameBuilder {
   constructor(private size: number) {}
@@ -31,7 +31,14 @@ export class GameBuilder {
           endIf: endPlacePhase,
           next: 'play',
         },
-        play: {},
+        play: {
+          turn: {
+            minMoves: 1,
+            maxMoves: 1,
+          },
+
+          moves: { movePawn },
+        },
       },
 
       endIf: endGame,
