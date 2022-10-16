@@ -7,32 +7,21 @@
 
     <mat-divider></mat-divider>
 
-    <div class="w-full h-full flex">
-      <div class="w-32 h-full p-2 text-left">
-        Players:
-        <ul>
-          <li *ngFor="let player of players" [class.font-bold]="player === playerID" class="pl-4">- {{ player }}</li>
-        </ul>
-      </div>
-
-      <mat-divider [vertical]="true"></mat-divider>
-
-      <div class="flex-grow h-full">
-        <table class="m-2">
-          <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
-            <td *ngFor="let _ of [].constructor(state.board.size); let j = index" class="p-2">
-              <div [ngStyle]="{ backgroundColor: colorAt(i, j) }"
-                   class="w-12 h-12" [class.border-2]="!board[i][j]?.player">
-                <button class="w-full h-full" (click)="onClick(index(i, j))">
-                  <div class="flex items-center justify-center" *ngIf="board[i][j]">
-                    <app-pawn [pawn]="board[i][j].pawn" size="xl"></app-pawn>
-                  </div>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </table>
-      </div>
+    <div class="w-full">
+      <table class="m-2">
+        <tr *ngFor="let _ of [].constructor(state.board.size); let i = index">
+          <td *ngFor="let _ of [].constructor(state.board.size); let j = index" class="p-2">
+            <div [ngStyle]="{ backgroundColor: colorAt(i, j) }"
+                 class="w-12 h-12" [class.border-2]="!board[i][j]?.player">
+              <button class="w-full h-full" (click)="onClick(index(i, j))">
+                <div class="flex items-center justify-center" *ngIf="board[i][j]">
+                  <app-pawn [pawn]="board[i][j].pawn" size="xl"></app-pawn>
+                </div>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </table>
     </div>
 
     <mat-divider></mat-divider>
