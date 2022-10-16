@@ -5,7 +5,6 @@ import { GameConfig } from '../../boardgame-io-angular/config';
 import { Local } from 'boardgame.io/multiplayer';
 import { GameInfoService } from '../common/game-info/game-info.service';
 import { PlayerCustomizationService } from '../common/player-customization/player-customization.service';
-import { Player } from '../../game/game-types';
 
 @Component({
   selector: 'app-game-page',
@@ -42,8 +41,16 @@ export class GamePageComponent implements OnInit {
     this.update();
   }
 
-  color(player: Player) {
-    return this.playerCustomizationService.getScheme(player).primary;
+  color() {
+    if (this.gameInfoService.gameover) {
+      if (this.gameInfoService.gameover.draw) {
+        return 'inherit';
+      }
+
+      return this.playerCustomizationService.getScheme(this.gameInfoService.gameover.winner).primary;
+    }
+
+    return this.playerCustomizationService.getScheme(this.currentPlayer).primary;
   }
 
   identity(x): any {

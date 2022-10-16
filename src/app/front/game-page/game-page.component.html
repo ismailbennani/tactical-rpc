@@ -8,7 +8,7 @@
   </div>
   <div class="w-full flex-grow flex items-center justify-evenly">
     <div class="flex-grow h-full flex items-center justify-center relative border-2"
-         [ngStyle]="{ borderColor: color(currentPlayer) }">
+         [ngStyle]="{ borderColor: color() }">
       <bio-client [bioGameConfig]="config" gameID="single" [playerID]="currentPlayer" [debug]="debug"></bio-client>
     </div>
   </div>

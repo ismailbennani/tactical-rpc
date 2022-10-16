@@ -34,4 +34,8 @@ export class GameInfoService {
   get players(): Player[] {
     return this.ctx?.playOrder ?? [];
   }
+
+  get gameover() {
+    return this.ctx?.gameover;
+  }
 }
